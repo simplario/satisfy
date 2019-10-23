@@ -3,6 +3,7 @@
 namespace Satisfy\Provider;
 
 use Satisfy\Host;
+use Satisfy\Satisfy;
 use Satisfy\Traits\RenderTrait;
 
 /**
@@ -63,7 +64,7 @@ class VagrantProvider extends AbstractProvider
         }
 
         $file = $options['dir'] . '/Vagrantfile';
-        $template = ROOT . '/template/vagrantfile.twig';
+        $template = Satisfy::root() . '/template/vagrantfile.twig';
 
         @mkdir($options['dir'], 0777, true);
         $source = $this->render($template, $options['params'] ?? []);

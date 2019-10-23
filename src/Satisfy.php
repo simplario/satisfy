@@ -108,4 +108,12 @@ class Satisfy
         return true;
     }
 
+    /**
+     * @return bool|string
+     */
+    public static function root()
+    {
+        return realpath(__DIR__ . '/../');
+    }
+
 }
