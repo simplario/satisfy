@@ -38,7 +38,7 @@ Vagrant.configure(2) do |config|
 
   # Synced Folder
   # --------------------
-  config.vm.synced_folder "../", "/data/satisfy", :mount_options => [ 'dmode=775', 'fmode=764' ], :owner => 'vagrant', :group => 'www-data'
+  config.vm.synced_folder "{{ mount_from }}", "{{ mount_to }}", :mount_options => [ 'dmode=775', 'fmode=764' ], :owner => 'vagrant', :group => 'www-data'
 
    # sudo apt-get update
    # sudo apt-get install php-cli
