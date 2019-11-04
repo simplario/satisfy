@@ -27,7 +27,7 @@ class BootstrapRecipe extends AbstractRecipe {
      * @return $this|mixed
      * @throws \Exception
      */
-    public function run()
+    public function play()
     {
         $out = '';
         $out .= (new UpdateRecipe())->setHost($this->host)->run();

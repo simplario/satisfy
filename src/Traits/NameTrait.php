@@ -4,6 +4,7 @@ namespace Satisfy\Traits;
 
 /**
  * Trait NameTrait
+ *
  * @package Satisfy\Traits
  */
 trait NameTrait
@@ -12,20 +13,16 @@ trait NameTrait
     protected $name = 'default';
 
     /**
-     * @return null
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param $name
+     * @param null $name
      *
-     * @return $this
+     * @return $this|string
      */
-    public function setName($name)
+    public function name($name = null)
     {
+        if($name === null){
+            return $this->name;
+        }
+
         $this->name = $name;
 
         return $this;

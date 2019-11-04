@@ -2,6 +2,10 @@
 
 namespace Satisfy;
 
+use Satisfy\Output\AbstractOutput;
+use Satisfy\Output\NullOutput;
+use Satisfy\Output\TraceOutput;
+use Satisfy\Recipe\AbstractRecipe;
 use Satisfy\Traits\SetOptionsTrait;
 
 /**
@@ -16,7 +20,24 @@ class Satisfy
     /**
      * @var array
      */
-    protected static $data = [];
+    protected $data = [];
+
+    /**
+     * @var static
+     */
+    protected static $instance;
+
+    /**
+     * @return Satisfy
+     */
+    public static function getInstance()
+    {
+        if (static::$instance === null) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
+    }
 
     /**
      * @param      $key
@@ -24,18 +45,22 @@ class Satisfy
      *
      * @return mixed|null
      */
-    public static function get($key, $default = null)
+    public function get($key, $default = null)
     {
-        return isset(static::$data[$key]) ? static::$data[$key] : $default;
+        return isset($this->data[$key]) ? $this->data[$key] : $default;
     }
 
     /**
      * @param $key
      * @param $value
+     *
+     * @return $this
      */
-    public static function set($key, $value)
+    public function set($key, $value)
     {
-        static::$data[$key] = $value;
+        $this->data[$key] = $value;
+
+        return $this;
     }
 
 
@@ -45,7 +70,7 @@ class Satisfy
      *
      * @return array
      */
-    public static function each($items, callable $call)
+    public function each($items, callable $call)
     {
         $result = [];
         foreach ($items as $index => $item) {
@@ -63,7 +88,7 @@ class Satisfy
      *
      * @return bool
      */
-    public static function parallel($parallel = 1, array $items = [], callable $call)
+    public function parallel($parallel = 1, array $items = [], callable $call)
     {
         $keys = array_keys($items);
         $count = count($keys);
@@ -107,7 +132,7 @@ class Satisfy
     /**
      * @return bool|string
      */
-    public static function root()
+    public function root()
     {
         return realpath(__DIR__ . '/../');
     }
@@ -115,25 +140,25 @@ class Satisfy
     /**
      * @var Host[]
      */
-    protected static $hosts = [];
+    protected $hosts = [];
 
     /**
      * @var Task[]
      */
-    protected static $tasks = [];
+    protected $tasks = [];
 
     /**
      * @param Host|null $host
      *
      * @return Host|Host[]
      */
-    public static function host(Host $host = null)
+    public function host(Host $host = null)
     {
         if($host === null){
-            return static::$hosts;
+            return $this->hosts;
         }
 
-        static::$hosts[] = $host;
+        $this->hosts[] = $host;
 
         return $host;
     }
@@ -143,23 +168,56 @@ class Satisfy
      *
      * @return Task|Task[]
      */
-    public static function task(Task $task = null)
+    public function task(Task $task = null)
     {
         if($task === null){
-            return static::$tasks;
+            return $this->tasks;
         }
 
-        static::$tasks[$task->getName()] = $task;
+        $this->tasks[$task->name()] = $task;
 
         return $task;
     }
+
+
+    /**
+     * @param $command
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function shell($command)
+    {
+        return $this->currentHost->shell($command);
+    }
+
+    /**
+     * @param AbstractRecipe $recipe
+     *
+     * @return mixed
+     */
+    public function recipe(AbstractRecipe $recipe)
+    {
+        $recipe->setHost($this->currentHost);
+        $output = $recipe->play();
+
+        return $output;
+    }
+
+
+    /**
+     * @var  Host
+     */
+    protected $currentHost;
 
     /**
      * @param $task
      * @param $stage
      * @param $roles
+     *
+     * @return $this
      */
-    public static function run($task, $stage, $roles)
+    public function play($task, $stage, $roles)
     {
         $detect = function ($what, $where) {
             foreach ((array)$what as $item) {
@@ -173,17 +231,60 @@ class Satisfy
 
         $pack = [];
         /** @var Host $host */
-        foreach (static::$hosts as $host) {
+        foreach ($this->hosts as $host) {
             if ($detect($stage, $host->stage()) && $detect($roles, $host->roles())) {
                 $pack[] = $host;
             }
         }
 
-        if(isset(static::$tasks[$task])){
+        if(isset($this->tasks[$task]) && count($pack) > 0){
+
+            // TODO make parallel
+
             foreach($pack as $host){
-                static::$tasks[$task]->run($host);
+                $this->currentHost = $host;
+                $this->tasks[$task]->play();
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @var AbstractOutput
+     */
+    protected $output;
+
+    /**
+     * @param $string
+     *
+     * @return $this
+     * @throws \Exception
+     */
+    public function write($string)
+    {
+        if (!$this->output instanceof AbstractOutput) {
+            if (PHP_SAPI === 'cli') {
+                $this->output = new TraceOutput();
+            } else {
+                $this->output = new NullOutput();
+            }
+        }
+
+        $this->output->write($string);
+
+        return $this;
+    }
+
+    /**
+     * @param $string
+     *
+     * @return Satisfy
+     * @throws \Exception
+     */
+    public function writeln($string)
+    {
+        return $this->write($string . PHP_EOL);
     }
 
 }

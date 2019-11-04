@@ -33,6 +33,19 @@ abstract class AbstractRecipe
         $this->setOptions($options);
     }
 
+
+    /**
+     * @param array $options
+     *
+     * @return AbstractRecipe
+     * @throws \Exception
+     */
+    public static function create(array $options = [])
+    {
+        return new static($options);
+    }
+
+
     /**
      * @param Host $host
      *
@@ -48,6 +61,6 @@ abstract class AbstractRecipe
     /**
      * @return mixed
      */
-    abstract public function run();
+    abstract public function play();
 
 }

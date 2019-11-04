@@ -20,7 +20,7 @@ class PackagesRecipe extends AbstractRecipe {
      * @return $this|mixed
      * @throws \Exception
      */
-    public function run()
+    public function play()
     {
         if (empty($this->packages)) {
             return '';

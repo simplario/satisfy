@@ -16,9 +16,9 @@ class UpdateRecipe extends AbstractRecipe
      * @return mixed|null|string
      * @throws \Exception
      */
-    public function run()
+    public function play()
     {
-        return $this->host->shell('sudo apt-get update ');
+        return $this->host->shell('sudo apt-get update');
     }
 
 

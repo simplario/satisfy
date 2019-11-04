@@ -7,6 +7,7 @@ use Satisfy\Traits\NameTrait;
 
 /**
  * Class Task
+ *
  * @package Satisfy
  */
 class Task
@@ -28,14 +29,13 @@ class Task
     }
 
     /**
-     * @param Host $host
-     *
      * @return $this
      */
-    public function run(Host $host)
+    public function play()
     {
         $f = $this->func;
-        $f($host);
+
+        $f();
 
         return $this;
     }
