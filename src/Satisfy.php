@@ -16,7 +16,7 @@ class Satisfy
     /**
      * @var array
      */
-    protected $data = [];
+    protected static $data = [];
 
     /**
      * @param      $key
@@ -24,22 +24,18 @@ class Satisfy
      *
      * @return mixed|null
      */
-    public function get($key, $default = null)
+    public static function get($key, $default = null)
     {
-        return isset($this->data[$key]) ? $this->data[$key] : $default;
+        return isset(static::$data[$key]) ? static::$data[$key] : $default;
     }
 
     /**
      * @param $key
      * @param $value
-     *
-     * @return $this
      */
-    public function set($key, $value)
+    public static function set($key, $value)
     {
-        $this->data[$key] = $key;
-
-        return $this;
+        static::$data[$key] = $value;
     }
 
 
@@ -114,6 +110,80 @@ class Satisfy
     public static function root()
     {
         return realpath(__DIR__ . '/../');
+    }
+
+    /**
+     * @var Host[]
+     */
+    protected static $hosts = [];
+
+    /**
+     * @var Task[]
+     */
+    protected static $tasks = [];
+
+    /**
+     * @param Host|null $host
+     *
+     * @return Host|Host[]
+     */
+    public static function host(Host $host = null)
+    {
+        if($host === null){
+            return static::$hosts;
+        }
+
+        static::$hosts[] = $host;
+
+        return $host;
+    }
+
+    /**
+     * @param Task|null $task
+     *
+     * @return Task|Task[]
+     */
+    public static function task(Task $task = null)
+    {
+        if($task === null){
+            return static::$tasks;
+        }
+
+        static::$tasks[$task->getName()] = $task;
+
+        return $task;
+    }
+
+    /**
+     * @param $task
+     * @param $stage
+     * @param $roles
+     */
+    public static function run($task, $stage, $roles)
+    {
+        $detect = function ($what, $where) {
+            foreach ((array)$what as $item) {
+                if (in_array($item, (array)$where, true)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        $pack = [];
+        /** @var Host $host */
+        foreach (static::$hosts as $host) {
+            if ($detect($stage, $host->stage()) && $detect($roles, $host->roles())) {
+                $pack[] = $host;
+            }
+        }
+
+        if(isset(static::$tasks[$task])){
+            foreach($pack as $host){
+                static::$tasks[$task]->run($host);
+            }
+        }
     }
 
 }

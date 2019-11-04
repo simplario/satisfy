@@ -20,6 +20,11 @@ class Host {
     use SetOptionsTrait;
     use RenderTrait;
 
+
+    protected $roles = [];
+    protected $stage;
+    protected $provider;
+
     /**
      * Host constructor.
      *
@@ -31,6 +36,52 @@ class Host {
     {
         $this->setOptions($options);
     }
+
+    /**
+     * @param       $provider
+     * @param array $params
+     *
+     * @return $this
+     */
+    public function provider($provider, array $params = [])
+    {
+        $this->provider = ['name' => $provider, 'params' => $params];
+
+        return $this;
+    }
+
+    /**
+     * @param null $roles
+     *
+     * @return $this|array
+     */
+    public function roles($roles = null)
+    {
+        if ($roles === null) {
+            return $this->roles;
+        }
+
+        $this->roles = (array)$roles;
+
+        return $this;
+    }
+
+    /**
+     * @param $stage
+     *
+     * @return $this
+     */
+    public function stage($stage = null)
+    {
+        if ($stage === null) {
+            return $this->stage;
+        }
+
+        $this->stage = (array)$stage;
+
+        return $this;
+    }
+
 
     /**
      * @param array $options
@@ -187,7 +238,7 @@ class Host {
     {
         $func = $this->flow[$name];
 
-        $this->writeln("Start flow: '{$name}' on '{$this->name}'");
+        $this->writeln("Start flow: '{$name}' on '{$this->getName()}'");
 
         $func($this);
 
