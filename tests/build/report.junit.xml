@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Tests" tests="1" assertions="6" errors="0" failures="1" skipped="0" time="0.016804">
+    <testsuite name="Tests\Core\SatisfyTest" file="/data/www/site/current/runtime/satisfy/tests/SatisfyTest.php" tests="1" assertions="6" errors="0" failures="1" skipped="0" time="0.016804">
+      <testcase name="testSatisfyFilterPack" class="Tests\Core\SatisfyTest" classname="Tests.Core.SatisfyTest" file="/data/www/site/current/runtime/satisfy/tests/SatisfyTest.php" line="40" assertions="6" time="0.016804">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Core\SatisfyTest::testSatisfyFilterPack
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+ Array (
+     'task' =&gt; Array (
+-        'task-111' =&gt; Array (...)
+     )
+     'host' =&gt; Array (...)
+ )
+
+/data/www/site/current/runtime/satisfy/tests/SatisfyTest.php:112
+</failure>
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>

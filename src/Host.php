@@ -8,7 +8,10 @@ use Satisfy\Output\TraceOutput;
 use Satisfy\Recipe\AbstractRecipe;
 use Satisfy\Traits\NameTrait;
 use Satisfy\Traits\RenderTrait;
+use Satisfy\Traits\RoleTrait;
 use Satisfy\Traits\SetOptionsTrait;
+use Satisfy\Traits\StageTrait;
+use Satisfy\Traits\TagsTrait;
 
 /**
  * Class Host
@@ -21,10 +24,10 @@ class Host
     use NameTrait;
     use SetOptionsTrait;
     use RenderTrait;
+    use RoleTrait;
+    use StageTrait;
+    use TagsTrait;
 
-
-    protected $roles = [];
-    protected $stage;
     protected $provider;
 
     /**
@@ -51,39 +54,6 @@ class Host
 
         return $this;
     }
-
-    /**
-     * @param null $roles
-     *
-     * @return $this|array
-     */
-    public function roles($roles = null)
-    {
-        if ($roles === null) {
-            return $this->roles;
-        }
-
-        $this->roles = (array)$roles;
-
-        return $this;
-    }
-
-    /**
-     * @param $stage
-     *
-     * @return $this
-     */
-    public function stage($stage = null)
-    {
-        if ($stage === null) {
-            return $this->stage;
-        }
-
-        $this->stage = (array)$stage;
-
-        return $this;
-    }
-
 
     /**
      * @param array $options

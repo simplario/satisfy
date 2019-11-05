@@ -13,16 +13,20 @@ trait NameTrait
     protected $name = 'default';
 
     /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * @param null $name
      *
      * @return $this|string
      */
     public function name($name = null)
     {
-        if($name === null){
-            return $this->name;
-        }
-
         $this->name = $name;
 
         return $this;

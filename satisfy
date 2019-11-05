@@ -1,0 +1,43 @@
+#!/usr/bin/php
+<?php
+
+require_once 'vendor/autoload.php';
+require_once 'functions.php';
+
+
+/**
+ * ./cli.php --book=example/example.php --task=ping --stage=test --role=app
+ */
+$request = getopt('', ['book:','task:','stage:', 'role:']);
+
+
+$book = isset($request['book']) && is_file($request['book']) ? $request['book'] : null;
+$task = isset($request['task']) ? $request['task'] : 'info';
+$stage = isset($request['stage']) ? (array) explode(',', trim($request['stage'])) : ['default'];
+$role = isset($request['role']) ? (array) explode(',', trim($request['role'])) : ['default'];
+
+if ($book) {
+    $paths[] = $book;
+}
+$paths[] = '../satisfy.php';
+$paths[] = '../../satisfy.php';
+$paths[] = '../../../satisfy.php';
+$paths[] = '../../../../satisfy.php';
+$paths[] = '../../../../../satisfy.php';
+
+satisfy()->writeln('');
+
+foreach ($paths as $path) {
+    if (is_file($path)) {
+        satisfy()->writeln('   File  : ' . $path);
+        require_once $path;
+        break;
+    }
+}
+
+satisfy()->writeln('   Task  : ' . $task);
+satisfy()->writeln('   Stage : ' . implode(',', $stage));
+satisfy()->writeln('   Role  : ' . implode(',', $role));
+satisfy()->writeln('');
+
+play($task, $stage, $role);

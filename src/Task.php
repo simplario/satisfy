@@ -3,6 +3,9 @@
 namespace Satisfy;
 
 use Satisfy\Traits\NameTrait;
+use Satisfy\Traits\RoleTrait;
+use Satisfy\Traits\StageTrait;
+use Satisfy\Traits\TagsTrait;
 
 
 /**
@@ -13,6 +16,9 @@ use Satisfy\Traits\NameTrait;
 class Task
 {
     use NameTrait;
+    use RoleTrait;
+    use StageTrait;
+    use TagsTrait;
 
     protected $func;
 
@@ -24,7 +30,7 @@ class Task
      */
     public function __construct($name, callable $func)
     {
-        $this->name = $name;
+        $this->name($name);
         $this->func = $func;
     }
 

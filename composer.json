@@ -18,5 +18,8 @@
     "scripts": {
         "test": "./vendor/bin/phpunit -vvv --no-coverage",
         "coverage": "./vendor/bin/phpunit -vvv"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5"
     }
 }

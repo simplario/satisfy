@@ -148,33 +148,35 @@ class Satisfy
     protected $tasks = [];
 
     /**
-     * @param Host|null $host
+     * @param Host $host
      *
      * @return Host|Host[]
+     * @throws \Exception
      */
-    public function host(Host $host = null)
+    public function host(Host $host)
     {
-        if($host === null){
-            return $this->hosts;
+        if (isset($this->hosts[$host->getName()])) {
+            throw new \Exception('Already exists host');
         }
 
-        $this->hosts[] = $host;
+        $this->hosts[$host->getName()] = $host;
 
         return $host;
     }
 
     /**
-     * @param Task|null $task
+     * @param Task $task
      *
-     * @return Task|Task[]
+     * @return Task
+     * @throws \Exception
      */
-    public function task(Task $task = null)
+    public function task(Task $task)
     {
-        if($task === null){
-            return $this->tasks;
+        if(isset($this->tasks[$task->getName()])){
+            throw new \Exception('Already exists task');
         }
 
-        $this->tasks[$task->name()] = $task;
+        $this->tasks[$task->getName()] = $task;
 
         return $task;
     }
@@ -192,12 +194,16 @@ class Satisfy
     }
 
     /**
-     * @param AbstractRecipe $recipe
+     * @param $recipe
      *
      * @return mixed
      */
-    public function recipe(AbstractRecipe $recipe)
+    public function recipe($recipe)
     {
+        if(!$recipe instanceof AbstractRecipe){
+
+        }
+
         $recipe->setHost($this->currentHost);
         $output = $recipe->play();
 
@@ -210,41 +216,96 @@ class Satisfy
      */
     protected $currentHost;
 
+
     /**
-     * @param $task
-     * @param $stage
-     * @param $roles
+     * @param       $name
+     * @param array $tags
      *
-     * @return $this
+     * @return array
      */
-    public function play($task, $stage, $roles)
+    public function mapTaskToHost(array $tags)
     {
-        $detect = function ($what, $where) {
-            foreach ((array)$what as $item) {
-                if (in_array($item, (array)$where, true)) {
-                    return true;
-                }
-            }
+        $pool = [
+            'task' => [],
+            'host' => [],
+        ];
 
-            return false;
-        };
-
-        $pack = [];
-        /** @var Host $host */
-        foreach ($this->hosts as $host) {
-            if ($detect($stage, $host->stage()) && $detect($roles, $host->roles())) {
-                $pack[] = $host;
+        foreach ($this->tasks as $taskName => $task) {
+            if ($task->includeTags($tags)) {
+                $pool['task'][$taskName] = $task->getTags();
             }
         }
 
-        if(isset($this->tasks[$task]) && count($pack) > 0){
-
-            // TODO make parallel
-
-            foreach($pack as $host){
-                $this->currentHost = $host;
-                $this->tasks[$task]->play();
+        foreach ($this->hosts as $hostName => $host) {
+            if ($host->includeTags($tags)) {
+                $pool['host'][$hostName] = $host->getTags();
             }
+        }
+
+        return $pool;
+    }
+
+
+    /**
+     * @param       $name
+     * @param array $stage
+     * @param array $role
+     *
+     * @return $this
+     */
+    public function play($name, array $stage, array $role)
+    {
+        if(!isset($this->tasks[$name])){
+            echo 'task is undefined : ' . $name . PHP_EOL;
+            return $this;
+        }
+
+        $task = $this->tasks[$name];
+
+        $role[] = 'default';
+        $stage[] = 'default';
+
+        if(!$task->hasStage($stage)){
+            echo 'task bad stage : ' . $name . PHP_EOL;
+            return $this;
+        }
+
+//        if(!$task->hasRole($role)){
+//            echo 'task bad role : ' . $name . PHP_EOL;
+//            return $this;
+//        }
+
+
+        $hosts = [];
+        foreach ($this->hosts as $host) {
+
+            if (!$host->hasStage($stage)) {
+                continue;
+            }
+
+//            if (!$host->hasRole($role)) {
+//                continue;
+//            }
+
+            if (!$host->hasStage($task->getStage())) {
+                continue;
+            }
+
+//            if (!$host->hasRole($task->getRole())) {
+//                continue;
+//            }
+
+            $hosts[] = $host;
+        }
+
+        if(!count($hosts) > 0){
+            echo 'hosts not found' . PHP_EOL;
+            return $this;
+        }
+
+        foreach ($hosts as $host) {
+            $this->currentHost = $host;
+            $task->play();
         }
 
         return $this;

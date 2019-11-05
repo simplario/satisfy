@@ -72,11 +72,11 @@ function play($task, $stage, $roles)
 }
 
 /**
- * @param \Satisfy\Recipe\AbstractRecipe $recipe
+ * @param $recipe
  *
  * @return mixed
  */
-function recipe(\Satisfy\Recipe\AbstractRecipe $recipe)
+function recipe($recipe)
 {
     return satisfy()->recipe($recipe);
 }
