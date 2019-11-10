@@ -6,15 +6,15 @@ require_once 'functions.php';
 
 
 /**
- * ./cli.php --book=example/example.php --task=ping --stage=test --role=app
+ * ./cli.php --book=example/example.php --task=ping --env=test --role=app
  */
-$request = getopt('', ['book:','task:','stage:', 'role:']);
-
+$request = getopt('', ['book:','task:','env:', 'role:', 'parallel:']);
 
 $book = isset($request['book']) && is_file($request['book']) ? $request['book'] : null;
 $task = isset($request['task']) ? $request['task'] : 'info';
-$stage = isset($request['stage']) ? (array) explode(',', trim($request['stage'])) : ['default'];
-$role = isset($request['role']) ? (array) explode(',', trim($request['role'])) : ['default'];
+$env = isset($request['env']) ? (array) explode(',', trim($request['env'])) : [];
+$role = isset($request['role']) ? (array) explode(',', trim($request['role'])) : [];
+$parallel = isset($request['parallel']) ? (int) $request['parallel'] : 1;
 
 if ($book) {
     $paths[] = $book;
@@ -25,19 +25,16 @@ $paths[] = '../../../satisfy.php';
 $paths[] = '../../../../satisfy.php';
 $paths[] = '../../../../../satisfy.php';
 
-satisfy()->writeln('');
-
 foreach ($paths as $path) {
     if (is_file($path)) {
-        satisfy()->writeln('   File  : ' . $path);
+        $book = $path;
         require_once $path;
         break;
     }
 }
+satisfy()->writeln(' ► Book   : ' . $book);
+satisfy()->writeln(' ► Task   : ' . $task);
+satisfy()->writeln(' ► Role   : ' . implode(', ', $role));
+satisfy()->writeln(' ► Env    : ' . implode(', ', $env));
 
-satisfy()->writeln('   Task  : ' . $task);
-satisfy()->writeln('   Stage : ' . implode(',', $stage));
-satisfy()->writeln('   Role  : ' . implode(',', $role));
-satisfy()->writeln('');
-
-play($task, $stage, $role);
+play($task, $env, $role, $parallel);

@@ -16,63 +16,53 @@
  */
 
 
-
-
-$hosts = [
-    [],
-    ['web'],
-    ['production'],
-    ['stage'],
-    ['app'],
-    ['web', 'production'],
-    ['app', 'stage'],
-];
-
-$tasks = [
-    [],
-    ['web'],
-    ['production'],
-    ['stage'],
-    ['app'],
-    ['web', 'production'],
-    ['app', 'stage'],
-];
-
-$play = [
-    [], // all to all
-    ['web'],  // host include = web && task include = web
-    ['production'],
-    ['stage'],
-    ['app'],
-    ['web', 'production'],
-    ['app', 'stage'],
-];
-
-
-// --env=stage         --role=nginx
-// --env=production    --role=nginx
-
-[ 'stage', 'production' ]
+localhost('local-111')
+    ->env('local')
+    ->role(['web']);
+//
+//localhost('local-222')
+//    ->env('local')
+//    ->role(['web', 'database']);
+//
+//localhost('local-333')
+//    ->env('local')
+//    ->role(['web', 'database']);
+//
+//localhost('local-444')
+//    ->env('local')
+//    ->role(['web', 'database']);
 
 
 
-localhost()
-    ->name('local-computer-111');
+task('echo-status', function (\Satisfy\Host $host) {
+    shell("echo '{$host->getName()} - echo-status'");
+});
 
-localhost()
-    ->name('local-computer-222')
-    ->stage('aaa')
-    ->role(['aaa']);
 
-localhost()
-    ->name('local-computer-333')
-    ->stage('aaa')
-    ->role(['aaa', 'aaa2']);
 
-localhost()
-    ->name('local-computer-444')
-    ->stage('bbb')
-    ->role(['bbb', 'bbb2']);
+task('bootstrap', function (\Satisfy\Host $host) {
+//    sleep($r = rand(1,5));
+//    shell("echo {$host->getName()} {$r}");
+
+    shell("echo {$host->getName()}");
+    recipe('echo-status');
+    recipe(\Satisfy\Recipe\Ubuntu1604\PackagesRecipe::create(['packages' => 'htop']));
+    recipe(\Satisfy\Recipe\Ubuntu1604\InstallDockerRecipe::create());
+})
+    ->env(['local'])
+    ->role([ 'web']);
+
+
+task('install-docker', function () {
+    shell('docker --version || curl -fsSL https://get.docker.com | sh');
+    shell('docker --version');
+    // shell('sudo docker run hello-world');
+    shell('docker-compose --version || ( sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose )');
+    shell('docker-compose --version');
+//    // shell('cd /data/ && sudo docker-compose up -d');
+});
+
+
 
 //host()
 //    ->name('test-vagrant')
@@ -92,33 +82,3 @@ localhost()
 //    ])
 //    ->stage('-')
 //    ->roles('-');
-
-
-task('ping', function () {
-    shell('pwd');
-
-    shell(' && ' , [
-        'pwd'
-    ]);
-
-    shell(implode(' || ', [
-        'pwd'
-    ]));
-
-
-    recipe('ping');
-
-    // recipe(\Satisfy\Recipe\Ubuntu1604\PackagesRecipe::create(['packages' => ['htop']]));
-});
-//    ->stage([]);
-//    ->roles(['all']);
-
-
-//task('install-docker', function () {
-//    shell('docker --version || curl -fsSL https://get.docker.com | sh');
-//    shell('docker --version');
-//    // shell('sudo docker run hello-world');
-//    shell('docker-compose --version || ( sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose )');
-//    shell('docker-compose --version');
-////    // shell('cd /data/ && sudo docker-compose up -d');
-//});

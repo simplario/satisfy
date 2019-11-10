@@ -8,11 +8,11 @@ use Satisfy\Traits\SetOptionsTrait;
 
 /**
  * Class AbstractRecipe
+ *
  * @package Satisfy\Recipe
  */
 abstract class AbstractRecipe
 {
-
     use SetOptionsTrait;
     use RenderTrait;
 
@@ -24,25 +24,28 @@ abstract class AbstractRecipe
     /**
      * AbstractRecipe constructor.
      *
-     * @param array $options
+     * @param array     $options
+     * @param Host|null $host
      *
      * @throws \Exception
      */
-    public function __construct(array $options = [])
+    public function __construct(array $options = [] , Host $host = null)
     {
+        $this->host = $host;
         $this->setOptions($options);
     }
 
 
     /**
-     * @param array $options
+     * @param array     $options
+     * @param Host|null $host
      *
      * @return AbstractRecipe
      * @throws \Exception
      */
-    public static function create(array $options = [])
+    public static function create(array $options = [], Host $host = null)
     {
-        return new static($options);
+        return new static($options, $host);
     }
 
 

@@ -3,15 +3,10 @@
 namespace Satisfy;
 
 use Satisfy\Output\AbstractOutput;
-use Satisfy\Output\NullOutput;
-use Satisfy\Output\TraceOutput;
-use Satisfy\Recipe\AbstractRecipe;
+use Satisfy\Traits\DependencyTrait;
 use Satisfy\Traits\NameTrait;
 use Satisfy\Traits\RenderTrait;
-use Satisfy\Traits\RoleTrait;
 use Satisfy\Traits\SetOptionsTrait;
-use Satisfy\Traits\StageTrait;
-use Satisfy\Traits\TagsTrait;
 
 /**
  * Class Host
@@ -24,21 +19,21 @@ class Host
     use NameTrait;
     use SetOptionsTrait;
     use RenderTrait;
-    use RoleTrait;
-    use StageTrait;
-    use TagsTrait;
+    use DependencyTrait;
 
     protected $provider;
 
     /**
      * Host constructor.
      *
+     * @param       $name
      * @param array $options
      *
      * @throws \Exception
      */
-    public function __construct(array $options = [])
+    public function __construct($name, array $options = [])
     {
+        $this->name($name);
         $this->setOptions($options);
     }
 
@@ -124,43 +119,6 @@ class Host
         $out = $this->shell("echo '$source' {$action} $to");
 
         return $out;
-    }
-
-
-    /**
-     * @var callable[]
-     */
-    protected $flow;
-
-    /**
-     * @param          $name
-     * @param callable $func
-     *
-     * @return $this
-     */
-    public function flow($name, callable $func)
-    {
-        $this->flow[$name] = $func;
-
-        return $this;
-    }
-
-
-    /**
-     * @param $name
-     *
-     * @return $this
-     * @throws \Exception
-     */
-    public function run($name)
-    {
-        $func = $this->flow[$name];
-
-        $this->writeln("Start flow: '{$name}' on '{$this->name()}'");
-
-        $func($this);
-
-        return $this;
     }
 
     /**

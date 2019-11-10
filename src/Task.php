@@ -2,11 +2,8 @@
 
 namespace Satisfy;
 
+use Satisfy\Traits\DependencyTrait;
 use Satisfy\Traits\NameTrait;
-use Satisfy\Traits\RoleTrait;
-use Satisfy\Traits\StageTrait;
-use Satisfy\Traits\TagsTrait;
-
 
 /**
  * Class Task
@@ -16,10 +13,11 @@ use Satisfy\Traits\TagsTrait;
 class Task
 {
     use NameTrait;
-    use RoleTrait;
-    use StageTrait;
-    use TagsTrait;
+    use DependencyTrait;
 
+    /**
+     * @var callable
+     */
     protected $func;
 
     /**
@@ -35,13 +33,15 @@ class Task
     }
 
     /**
+     * @param Host $host
+     *
      * @return $this
      */
-    public function play()
+    public function play(Host $host)
     {
         $f = $this->func;
 
-        $f();
+        $f($host);
 
         return $this;
     }

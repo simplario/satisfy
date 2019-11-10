@@ -13,27 +13,29 @@ function satisfy()
 
 
 /**
+ * @param       $name
  * @param array $options
  *
  * @return Host|Host[]
  * @throws Exception
  */
-function localhost(array $options = [])
+function localhost($name, array $options = [])
 {
     $options['provider'] = 'localhost';
 
-    return host($options);
+    return host($name, $options);
 }
 
 /**
+ * @param       $name
  * @param array $options
  *
  * @return Host|Host[]
  * @throws Exception
  */
-function host(array $options = [])
+function host($name, array $options = [])
 {
-    return satisfy()->host(new \Satisfy\Host($options));
+    return satisfy()->host(new \Satisfy\Host($name, $options));
 }
 
 /**
@@ -63,12 +65,14 @@ function shell($command)
  * @param $task
  * @param $stage
  * @param $roles
+ * @param $parallel
  *
  * @return Satisfy
+ * @throws Exception
  */
-function play($task, $stage, $roles)
+function play($task, $stage, $roles, $parallel)
 {
-    return satisfy()->play($task, $stage, $roles);
+    return satisfy()->play($task, $stage, $roles, $parallel);
 }
 
 /**

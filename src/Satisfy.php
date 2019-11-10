@@ -190,6 +190,8 @@ class Satisfy
      */
     public function shell($command)
     {
+        $command = is_array($command) ? implode(' && ', $command) : $command;
+
         return $this->currentHost->shell($command);
     }
 
@@ -200,8 +202,9 @@ class Satisfy
      */
     public function recipe($recipe)
     {
-        if(!$recipe instanceof AbstractRecipe){
-
+        if (!$recipe instanceof AbstractRecipe) {
+            $task = isset($this->tasks[$recipe]) ? $this->tasks[$recipe] : null;
+            return $task->play($this->currentHost);
         }
 
         $recipe->setHost($this->currentHost);
@@ -248,65 +251,50 @@ class Satisfy
 
     /**
      * @param       $name
-     * @param array $stage
+     * @param array $env
      * @param array $role
+     * @param int   $parallel
      *
-     * @return $this
+     * @return $this|Satisfy
+     * @throws \Exception
      */
-    public function play($name, array $stage, array $role)
+    public function play($name, array $env, array $role, $parallel = 1)
     {
-        if(!isset($this->tasks[$name])){
-            echo 'task is undefined : ' . $name . PHP_EOL;
-            return $this;
+
+        $task = isset($this->tasks[$name]) ? $this->tasks[$name] : null;
+
+        if (!$task) {
+            return $this->writeln("Fail : task '{$name}' is undefined");
         }
 
-        $task = $this->tasks[$name];
+        $detect['task:env'] = $task->hasEmptyEnv() || $task->hasOneEnv($env);
+        $detect['task:role'] = $task->hasEmptyRole() || $task->hasOneRole($role);
 
-        $role[] = 'default';
-        $stage[] = 'default';
-
-        if(!$task->hasStage($stage)){
-            echo 'task bad stage : ' . $name . PHP_EOL;
-            return $this;
+        if (!$detect['task:env'] || !$detect['task:role']) {
+            return $this->writeln("Fail : task '{$name}' env or role is missing");
         }
 
-//        if(!$task->hasRole($role)){
-//            echo 'task bad role : ' . $name . PHP_EOL;
-//            return $this;
-//        }
-
-
-        $hosts = [];
-        foreach ($this->hosts as $host) {
-
-            if (!$host->hasStage($stage)) {
-                continue;
+        $pack = [];
+        foreach($this->hosts as $host){
+            $detect['host:env'] = $host->hasEmptyEnv() || $host->hasOneEnv($env);
+            $detect['host:role'] = $host->hasEmptyRole() || $host->hasOneRole($role);
+            if ($detect['host:env'] && $detect['host:role']) {
+                $pack[$host->getName()] = $host;
             }
-
-//            if (!$host->hasRole($role)) {
-//                continue;
-//            }
-
-            if (!$host->hasStage($task->getStage())) {
-                continue;
-            }
-
-//            if (!$host->hasRole($task->getRole())) {
-//                continue;
-//            }
-
-            $hosts[] = $host;
         }
 
-        if(!count($hosts) > 0){
-            echo 'hosts not found' . PHP_EOL;
-            return $this;
+        if(empty($pack)){
+            return $this->writeln("Fail : hosts are empty");
         }
 
-        foreach ($hosts as $host) {
+        $this->writeln(" ► Detect : " . implode(', ', array_keys($pack)));
+
+
+        $self = $this;
+        $this->parallel($parallel, array_values($pack), function($index, $host) use ($self, $task){
             $this->currentHost = $host;
-            $task->play();
-        }
+            $task->play($host);
+        });
 
         return $this;
     }
